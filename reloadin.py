@@ -25,21 +25,24 @@
 
 
 
+#!/isan/bin/python
+
 import datetime
 from cli import cli
 import sys
 
 numArg = len(sys.argv)
 
-#check if cancel
+# check if cancel
 
 if sys.argv[1] == "cancel":
 
         schedCLIjob = 'conf t ; no scheduler job name reloadinCommand5657373'
         schedCLItime = 'conf t ; no scheduler schedule name reloadinCommand5657373'
         print "Canceling reload"
-
-#check number of argvs and if first one is a int
+        exit()
+        
+# check number of argvs and if first one is an integer
 
 elif numArg <= 3:
         try:
@@ -53,8 +56,8 @@ elif numArg <= 3:
         actionTime = now + datetime.timedelta(minutes = requestTime)
         reloadTime = str(actionTime)
         reloadTime=reloadTime[11:-10]
-        schedCLIjob = 'conf t ; scheduler job name reloadinCommand5657373 ; reload ; exit'
-        schedCLItime = 'conf t ; scheduler schedule name reloadinCommand5657373 ; time start ' + reloadTime + ' repeat 48:00 ; end '
+        schedCLIjob =  'conf t ; no scheduler job name reloadinJob5657373 ; scheduler job name reloadinJob5657373 ; reload force ; exit'
+        schedCLItime = 'conf t ; no scheduler schedule name reloadinSchedule5657373 ; scheduler schedule name reloadinSchedule5657373 ; job name reloadinJob5657373 ; time start ' + reloadTime + ' ; exit '
 
         if numArg == 3 and sys.argv[2] == "save".lower():
                 cli('copy running-config startup-config')
@@ -63,15 +66,25 @@ elif numArg <= 3:
         print "current time on the switch is " + str(now)
         print "reload scheduled at " + reloadTime
 
-#run the CLI
-cli('conf t ; feature scheduler')
+        # run the CLI
+        cli('conf t ; feature scheduler')
+        
+        try:
+                print("Running command " + schedCLIjob)
+                cli(schedCLIjob)
+        except:
+                print "schedCLIjob operation failed"
+                sys.exit()
+        
+                
+        try:
+                print("Running command " + schedCLItime)
+                cli(schedCLItime)
+        except:
+                print "schedCLItime operation failed"
+                sys.exit()
+                
+        
+        print "Operation success"
 
-try:
-        cli(schedCLIjob)
-except:
-        print "operation failed..did you cancel a job that was not there?"
-        sys.exit()
 
-
-cli(schedCLItime)
-print "Operation success"
